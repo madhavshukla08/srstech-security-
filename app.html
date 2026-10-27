@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101923">
+<title>SRS TECH Security</title>
+<style>
+:root {
+ --bg:#101923;--panel:#182431;--panel2:#223343;
+ --text:#edf5fb;--muted:#a5b5c4;--accent:#48d6c6;
+ --border:#304253;--soft:#203b42;--danger:#ff8585;
+}
+html[data-theme="ocean"]{--bg:#0b1728;--panel:#142841;--panel2:#1d3854;--text:#eff7ff;--muted:#a9c0d9;--accent:#58b8ff;--border:#304d6b;--soft:#193b59}
+html[data-theme="emerald"]{--bg:#101b17;--panel:#192a22;--panel2:#233b30;--text:#eefbf3;--muted:#a8c6b3;--accent:#58d68d;--border:#345342;--soft:#214532}
+html[data-theme="violet"]{--bg:#191426;--panel:#251d38;--panel2:#342849;--text:#f5efff;--muted:#c0b0d8;--accent:#b99aff;--border:#493960;--soft:#38294e}
+html[data-theme="rose"]{--bg:#25151b;--panel:#352029;--panel2:#472b37;--text:#fff0f4;--muted:#d2aeb9;--accent:#ff91b4;--border:#5a3545;--soft:#51283c}
+html[data-theme="amber"]{--bg:#211b10;--panel:#302719;--panel2:#44351f;--text:#fff8e8;--muted:#d2c09c;--accent:#ffc45b;--border:#59462a;--soft:#4c391a}
+html[data-theme="light"]{color-scheme:light;--bg:#f3f6fa;--panel:#fff;--panel2:#edf2f8;--text:#182638;--muted:#64748b;--accent:#087f8c;--border:#d7e0ea;--soft:#e1f2f2;--danger:#bd3030}
+html[data-theme="slate"]{--bg:#171b22;--panel:#232a34;--panel2:#303a47;--text:#f1f4f8;--muted:#b1bdca;--accent:#c0d0e4;--border:#414e5e;--soft:#303f50}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:900px;margin:auto;padding:22px}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:45px;height:45px;display:grid;place-items:center;background:var(--soft);color:var(--accent);font-size:23px;font-weight:bold;border-radius:12px}
+h1{font-size:19px;margin:0}
+.brand p,.account small{margin:3px 0 0;color:var(--muted);font-size:12px}
+.account{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);padding:9px 12px;border-radius:12px}
+.avatar{width:32px;height:32px;display:grid;place-items:center;background:var(--soft);color:var(--accent);border-radius:50%}
+.account small{display:block}
+.theme-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 0 24px}
+.theme-row label,.eyebrow{font-size:11px;letter-spacing:1.3px;color:var(--muted);font-weight:bold}
+select,input,textarea{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:10px;max-width:100%}
+.welcome{margin:25px 0}
+.eyebrow{color:var(--accent)}
+h2{font-size:27px;margin:7px 0}
+p{color:var(--muted)}
+.section-title{margin:25px 0 12px}
+.section-title h3{margin:0}
+.tabs{display:flex;flex-direction:column;gap:10px}
+.tab{display:flex;align-items:center;gap:14px;text-align:left;width:100%;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text)}
+.tab:hover{border-color:var(--accent);background:var(--soft)}
+.icon{flex:0 0 42px;height:42px;display:grid;place-items:center;border-radius:10px;background:var(--panel2);font-size:21px}
+.tab-copy{flex:1;min-width:0}
+.tab-copy strong{display:block}
+.tab-copy small{display:block;color:var(--muted);margin-top:4px}
+.arrow{font-size:23px;color:var(--muted)}
+.content{margin-top:18px;background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:20px}
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:10px 14px}
+.btn.primary{background:var(--accent);color:var(--bg);font-weight:bold}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:0}
+.row strong{display:block}
+.row small{display:block;color:var(--muted);margin-top:3px}
+.status{font-size:11px;color:var(--muted);background:var(--panel2);padding:5px 9px;border-radius:20px;white-space:nowrap}
+.notice{background:var(--soft);border-left:3px solid var(--accent);padding:13px;margin-top:18px;border-radius:5px;color:var(--muted);font-size:13px}
+.field{display:flex;flex-direction:column;gap:6px;margin:13px 0}
+.field label{font-size:13px;color:var(--muted)}
+.field input,.field textarea{width:100%}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 0}
+@media(max-width:520px){.app{padding:14px}.tab{padding:13px 10px;gap:10px}.icon{flex-basis:36px;height:36px}h2{font-size:23px}.content{padding:15px}.account{padding:7px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand"><div class="logo">S</div><div><h1>SRS TECH Security</h1><p>Privacy and device protection</p></div></div>
+ <div class="account"><div class="avatar">U</div><div><strong>My Account</strong><small>Prototype user</small></div></div>
+</header>
+
+<div class="theme-row">
+ <label for="themeSelect">APPEARANCE / THEME</label>
+ <select id="themeSelect" aria-label="Choose theme">
+  <option value="midnight">1. Midnight</option>
+  <option value="ocean">2. Ocean Blue</option>
+  <option value="emerald">3. Emerald</option>
+  <option value="violet">4. Violet</option>
+  <option value="rose">5. Rose</option>
+  <option value="amber">6. Amber</option>
+  <option value="light">7. Light</option>
+  <option value="slate">8. Slate Grey</option>
+ </select>
+</div>
+
+<main id="pageView" aria-live="polite"></main>
+<div class="notice">Security prototype: features requiring Android device access or online services are clearly marked. This website alone cannot enforce device permissions, detect lock-screen failures, or remove content from the internet.</div>
+<footer>SRS TECH Security · Privacy first, always.</footer>
+</div>
+
+<script>
+const categories=[
+ {name:"Gallery",icon:"▧",desc:"Photos, videos and media permissions"},
+ {name:"Microphone",icon:"♩",desc:"Microphone access permissions"},
+ {name:"Camera",icon:"▣",desc:"Camera access permissions"},
+ {name:"Phone",icon:"☎",desc:"Phone and call-related permissions"},
+ {name:"Gemini",icon:"✧",desc:"Review Gemini app permissions"},
+ {name:"AI Apps",icon:"◇",desc:"Review AI application permissions"},
+ {name:"Contacts",icon:"♙",desc:"Contacts access permissions"},
+ {name:"Social Media",icon:"◎",desc:"Review social media app permissions"}
+];
+
+const features=[
+ {id:"privacy",icon:"◈",name:"Privacy Manager",desc:"Explore Gallery, Microphone, Camera, Phone, Gemini, AI Apps, Contacts and Social Media."},
+ {id:"permissions",icon:"⌘",name:"App Permission Control",desc:"Review permission categories and learn where to manage them on your device."},
+ {id:"control",icon:"⚙",name:"Control System",desc:"Review personal information, contacts and media control options."},
+ {id:"apk",icon:"⌘",name:"APK Code Generator",desc:"Prepare a project specification for an Android app."},
+ {id:"theft",icon:"⌖",name:"Anti-Theft Center",desc:"Set up recovery contact details and plan for a lost phone."},
+ {id:"unlock",icon:"▣",name:"Wrong Unlock Detection",desc:"Configure the intended response to repeated incorrect unlock attempts."},
+ {id:"shutdown",icon:"◉",name:"Fake Shutdown",desc:"Explore the proposed privacy-screen concept and Android limitations."},
+ {id:"parental",icon:"♧",name:"Parental Security",desc:"Plan screen-time limits, app usage review and family controls."},
+ {id:"mms",icon:"◎",name:"Detect MMS & Delete MMS",desc:"Prepare a media-leak response and takedown checklist."}
+];
+
+const pageView=document.getElementById("pageView");
+const themeSelect=document.getElementById("themeSelect");
+const themeNames=["midnight","ocean","emerald","violet","rose","amber","light","slate"];
+
+function setTheme(name){
+ if(!themeNames.includes(name))name="midnight";
+ document.documentElement.dataset.theme=name;
+ try{localStorage.setItem("srsTheme",name)}catch(e){}
+ themeSelect.value=name;
+ document.querySelector('meta[name="theme-color"]').content=getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+}
+themeSelect.addEventListener("change",()=>setTheme(themeSelect.value));
+let saved="midnight";
+try{saved=localStorage.getItem("srsTheme")||"midnight"}catch(e){}
+setTheme(saved);
+
+function makeButton(label,action,cls="btn"){
+ const b=document.createElement("button");b.type="button";b.className=cls;b.textContent=label;b.addEventListener("click",action);return b;
+}
+function heading(kicker,title,description){
+ const box=document.createElement("div");box.className="welcome";
+ const k=document.createElement("div");k.className="eyebrow";k.textContent=kicker;
+ const h=document.createElement("h2");h.textContent=title;
+ const p=document.createElement("p");p.textContent=description;
+ box.append(k,h,p);return box;
+}
+function backButton(label,action){
+ const b=makeButton("← "+label,action);b.style.marginBottom="14px";return b;
+}
+function clearPage(){pageView.innerHTML="";window.scrollTo({top:0,behavior:"smooth"})}
+function showDashboard(){
+ clearPage();
+ pageView.append(heading("YOUR SECURITY SPACE","Privacy, made simple.","Choose any feature below. Each feature opens its own page."));
+ const title=document.createElement("div");title.className="section-title";
+ const h=document.createElement("h3");h.textContent="All 9 Security Features";title.append(h);pageView.append(title);
+ const list=document.createElement("div");list.className="tabs";
+ features.forEach(f=>{
+  const b=document.createElement("button");b.className="tab";
+  b.innerHTML=`<span class="icon">${f.icon}</span><span class="tab-copy"><strong>${f.name}</strong><small>${f.desc}</small></span><span class="arrow">›</span>`;
+  b.addEventListener("click",()=>openFeature(f.id));list.append(b);
+ });
+ pageView.append(list);
+}
+function makePanel(title,description){
+ const panel=document.createElement("section");panel.className="content";
+ const h=document.createElement("h3");h.textContent=title;panel.append(h);
+ if(description){const p=document.createElement("p");p.textContent=description;panel.append(p)}
+ return panel;
+}
+function makeRow(title,description,status="Setup required"){
+ const row=document.createElement("div");row.className="row";
+ const left=document.createElement("div");
+ const strong=document.createElement("strong");strong.textContent=title;
+ const small=document.createElement("small");small.textContent=description;
+ left.append(strong,small);const badge=document.createElement("span");badge.className="status";badge.textContent=status;row.append(left,badge);return row;
+}
+function openFeature(id){
+ if(id==="privacy")return openPrivacy();
+ if(id==="permissions")return openPermissions();
+ if(id==="control")return openControl();
+ if(id==="apk")return openAPK();
+ if(id==="theft")return openTheft();
+ if(id==="unlock")return openUnlock();
+ if(id==="shutdown")return openShutdown();
+ if(id==="parental")return openParental();
+ if(id==="mms")return openMMS();
+}
+function openPrivacy(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("PRIVACY MANAGER","Manage your privacy","Choose a category to open its own page."));
+ const list=document.createElement("div");list.className="tabs";
+ categories.forEach(c=>{
+  const b=document.createElement("button");b.className="tab";
+  b.innerHTML=`<span class="icon">${c.icon}</span><span class="tab-copy"><strong>${c.name}</strong><small>${c.desc}</small></span><span class="arrow">›</span>`;
+  b.addEventListener("click",()=>openCategory(c));list.append(b);
+ });pageView.append(list);
+}
+function openCategory(c){
+ clearPage();pageView.append(backButton("Privacy Manager",openPrivacy));
+ pageView.append(heading("PRIVACY MANAGER",c.name,c.desc));
+ const panel=makePanel(c.name+" access","Review this category's permission information.");
+ panel.append(makeRow("Device app permissions","Actual app names and permission states require Android integration."));
+ const note=document.createElement("div");note.className="notice";note.textContent="For now, open your phone's Settings → Privacy or Permission Manager to inspect or change actual permissions. This web prototype cannot read another app's permissions.";panel.append(note);
+ pageView.append(panel);
+}
+function openPermissions(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("APP PERMISSION CONTROL","Permission Control","Choose a category to review it."));
+ const list=document.createElement("div");list.className="tabs";
+ categories.forEach(c=>{
+  const b=document.createElement("button");b.className="tab";
+  b.innerHTML=`<span class="icon">${c.icon}</span><span class="tab-copy"><strong>${c.name}</strong><small>${c.desc}</small></span><span class="arrow">›</span>`;
+  b.addEventListener("click",()=>openCategory(c));list.append(b);
+ });pageView.append(list);
+ const note=document.createElement("div");note.className="notice";note.textContent="Permission changes are controlled by Android. Native Android integration is required to open supported system settings or inspect device permission data.";pageView.append(note);
+}
+function openControl(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("CONTROL SYSTEM","Personal data controls","Review the areas you want to protect."));
+ const panel=makePanel("Control options","These are planning options, not active device locks.");
+ ["Contacts and personal details","Photos and media access","Private information","App access review"].forEach(x=>panel.append(makeRow(x,"Native Android integration required.")));
+ pageView.append(panel);
+}
+function openAPK(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("APK CODE GENERATOR","Android project planner","Create a basic project specification for development."));
+ const panel=makePanel("Project details","This prototype does not compile or sign APK files.");
+ const field=document.createElement("div");field.className="field";
+ const label=document.createElement("label");label.textContent="Android app name";
+ const input=document.createElement("input");input.id="apkName";input.value="SRS TECH Security";input.maxLength=60;
+ field.append(label,input);panel.append(field);
+ const result=document.createElement("pre");result.style.whiteSpace="pre-wrap";result.style.color="var(--muted)";
+ panel.append(makeButton("Generate project specification",()=>{
+  const name=document.getElementById("apkName").value.trim()||"SRS TECH Security";
+  result.textContent="Project: "+name+"\nPlatform: Android\nNext step: create a native Android Studio project.\nRequired: Android manifest, permission handling, UI, testing and APK build/signing.";
+ }));
+ panel.append(result);pageView.append(panel);
+}
+function addField(panel,labelText,id,type="text"){
+ const box=document.createElement("div");box.className="field";
+ const label=document.createElement("label");label.htmlFor=id;label.textContent=labelText;
+ const input=document.createElement("input");input.id=id;input.type=type;
+ if(type==="tel")input.placeholder="Enter phone number";
+ if(type==="email")input.placeholder="Enter email address";
+ box.append(label,input);panel.append(box);
+}
+function openTheft(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("ANTI-THEFT CENTER","Lost phone recovery","Save recovery details in this browser for this prototype."));
+ const panel=makePanel("Recovery contact","Do not enter information on a shared or public computer.");
+ addField(panel,"Your name","recoveryName");
+ addField(panel,"Email address","recoveryEmail","email");
+ addField(panel,"Alternate phone number","recoveryPhone","tel");
+ const msg=document.createElement("p");msg.id="recoveryStatus";panel.append(makeButton("Save on this browser",()=>{
+  const data={name:document.getElementById("recoveryName").value,email:document.getElementById("recoveryEmail").value,phone:document.getElementById("recoveryPhone").value};
+  try{localStorage.setItem("srsRecovery",JSON.stringify(data));msg.textContent="Recovery details saved in this browser only."}catch(e){msg.textContent="Could not save details in this browser."}
+ }));
+ panel.append(msg);
+ const lost=makePanel("Lost Mobile","This button does not locate or lock a phone. Remote actions require a secure backend and device enrollment.");
+ lost.append(makeButton("Lost mobile — setup required",()=>alert("Real phone location and remote locking are not connected in this prototype.")));
+ pageView.append(panel,lost);
+ try{const d=JSON.parse(localStorage.getItem("srsRecovery")||"{}");["recoveryName","recoveryEmail","recoveryPhone"].forEach((id,i)=>document.getElementById(id).value=[d.name,d.email,d.phone][i]||"")}catch(e){}
+}
+function openUnlock(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("WRONG UNLOCK DETECTION","Incorrect unlock alerts","Configure the proposed behavior for future native Android development."));
+ const panel=makePanel("Detection settings","A web page cannot detect failed lock-screen password attempts.");
+ const label=document.createElement("label");label.textContent="Enable proposed feature ";
+ const select=document.createElement("select");select.id="unlockToggle";
+ [["off","Off"],["on","On (prototype setting only)"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;select.append(o)});
+ const count=document.createElement("div");count.className="field";const l=document.createElement("label");l.textContent="Incorrect attempts before alert";const n=document.createElement("select");[3,4,5].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v+" attempts";n.append(o)});count.append(l,n);
+ panel.append(label,select,count);
+ const note=document.createElement("div");note.className="notice";note.textContent="Monitoring failed PIN/password attempts, capturing evidence, and sending alerts require a supported native Android design. Fingerprint and lock-screen events have platform restrictions.";panel.append(note);
+ pageView.append(panel);
+}
+function openShutdown(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("FAKE SHUTDOWN","Privacy screen concept","Explore the concept without pretending to power off your phone."));
+ const panel=makePanel("Prototype demo","A normal website cannot intercept the physical power button or control the system shutdown screen.");
+ panel.append(makeButton("Preview a fake shutdown screen",()=>{
+  clearPage();
+  const screen=document.createElement("div");screen.style.cssText="position:fixed;inset:0;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;text-align:center";
+  const h=document.createElement("h2");h.textContent="Screen off simulation";
+  const p=document.createElement("p");p.textContent="This is only a website demo, not a real shutdown.";
+  const b=makeButton("Return to SRS TECH",showDashboard);screen.append(h,p,b);document.body.append(screen);
+  b.addEventListener("click",()=>screen.remove(),{once:true});
+ }));
+ const note=document.createElement("div");note.className="notice";note.textContent="Triple power-button activation and real system-screen behavior depend on Android version, device manufacturer, and permitted system APIs.";panel.append(note);pageView.append(panel);
+}
+function openParental(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("PARENTAL SECURITY","Family screen-time plan","Configure a sample daily limit for planning."));
+ const panel=makePanel("Daily screen-time limit","The setting below is saved only in this browser; it does not block apps.");
+ const field=document.createElement("div");field.className="field";const label=document.createElement("label");label.textContent="Daily limit";
+ const select=document.createElement("select");select.id="screenLimit";
+ [1,2,3,4,5,6,7,8].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v+" hours";if(v===6)o.selected=true;select.append(o)});
+ field.append(label,select);panel.append(field);
+ const appField=document.createElement("div");appField.className="field";const appLabel=document.createElement("label");appLabel.textContent="Apps to allow (example)";const appInput=document.createElement("input");appInput.value="Phone, WhatsApp";appInput.id="allowedApps";appField.append(appLabel,appInput);panel.append(appField);
+ const status=document.createElement("p");panel.append(makeButton("Save sample plan",()=>{try{localStorage.setItem("srsParental",JSON.stringify({hours:select.value,apps:appInput.value}));status.textContent="Sample plan saved in this browser."}catch(e){status.textContent="Could not save plan."}}));panel.append(status);
+ const note=document.createElement("div");note.className="notice";note.textContent="Real app usage reports, app blocking, and enforced schedules require native Android integration and appropriate parental-control permissions.";panel.append(note);pageView.append(panel);
+ try{const d=JSON.parse(localStorage.getItem("srsParental")||"{}");if(d.hours)select.value=d.hours;if(d.apps)appInput.value=d.apps}catch(e){}
+}
+function openMMS(){
+ clearPage();pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("MEDIA LEAK ASSISTANCE","Detect & report leaked media","Organize the response if an image or video is shared without permission."));
+ const panel=makePanel("Incident details","Do not upload intimate or private images into this prototype.");
+ const field=document.createElement("div");field.className="field";const label=document.createElement("label");label.textContent="Platform where content may appear";
+ const select=document.createElement("select");select.id="leakPlatform";
+ ["Unknown","Instagram","Facebook","Snapchat","WhatsApp","Website or search engine","Other"].forEach(v=>{const o=document.createElement("option");o.textContent=v;select.append(o)});field.append(label,select);panel.append(field);
+ const detail=document.createElement("div");detail.className="field";const dl=document.createElement("label");dl.textContent="Reference or notes (do not enter passwords or sensitive image URLs)";const input=document.createElement("textarea");input.id="leakNotes";input.rows=3;input.placeholder="Describe the issue without sharing private media.";detail.append(dl,input);panel.append(detail);
+ const result=document.createElement("div");
+ panel.append(makeButton("Create response checklist",()=>{
+  result.innerHTML="";
+  ["Preserve relevant evidence safely","Report the content through the platform's official reporting process","Request removal from the website or platform","Review account privacy and security","If intimate imagery or threats are involved, seek trusted help and report to the appropriate authority"].forEach(t=>{const p=document.createElement("p");p.textContent="☐ "+t;result.append(p)});
+  const intro=document.createElement("p");intro.textContent="Platform: "+select.value;result.prepend(intro);
+ }));
+ panel.append(result);
+ const note=document.createElement("div");note.className="notice";note.textContent="No universal service can guarantee detection of every copy or deletion from every website with one click. Actual scanning, reporting, and removal depend on platform access and review.";panel.append(note);pageView.append(panel);
+}
+showDashboard();
+</script>
+</body>
+</html>
