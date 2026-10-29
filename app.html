@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101923">
-<title>SRS TECH Security</title>
+<title>SurakshaX</title>
 <style>
 :root {
  --bg:#101923;--panel:#182431;--panel2:#223343;
@@ -68,8 +68,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 0}
 <body>
 <div class="app">
 <header>
- <div class="brand"><div class="logo">S</div><div><h1>SRS TECH Security</h1><p>Privacy and device protection</p></div></div>
- <div class="account"><div class="avatar">U</div><div><strong>My Account</strong><small>Prototype user</small></div></div>
+ <div class="brand"><div class="logo">S</div><div><h1>SurakshaX</h1><p>Privacy and device protection</p></div></div>
+ <button class="account" id="accountMenuBtn" type="button" aria-label="Open account"><div class="avatar">U</div><div style="text-align:left"><strong id="accountName">My Account</strong><small>Account & Profile</small></div><span>⌄</span></button>
 </header>
 
 <div class="theme-row">
@@ -88,10 +88,24 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 0}
 
 <main id="pageView" aria-live="polite"></main>
 <div class="notice">Security prototype: features requiring Android device access or online services are clearly marked. This website alone cannot enforce device permissions, detect lock-screen failures, or remove content from the internet.</div>
-<footer>SRS TECH Security · Privacy first, always.</footer>
+<footer>SurakshaX · Privacy first, always.</footer>
 </div>
 
 <script>
+(function () {
+  if (sessionStorage.getItem('srstech_demo_session') !== 'active') {
+    window.location.replace('index.html');
+  }
+})();
+</script>
+
+<script>
+
+const currentDemoUser=sessionStorage.getItem("srstech_demo_user")||"Demo user";
+const accountName=document.getElementById("accountName");
+if(accountName)accountName.textContent=currentDemoUser;
+document.getElementById("accountMenuBtn")?.addEventListener("click",openAccount);
+
 const categories=[
  {name:"Gallery",icon:"▧",desc:"Photos, videos and media permissions"},
  {name:"Microphone",icon:"♩",desc:"Microphone access permissions"},
@@ -145,18 +159,377 @@ function backButton(label,action){
  const b=makeButton("← "+label,action);b.style.marginBottom="14px";return b;
 }
 function clearPage(){pageView.innerHTML="";window.scrollTo({top:0,behavior:"smooth"})}
+
+// SRS TECH demo QR verification. Demo only; not secure authentication.
+const SRS_TEST_QR = "SRS-TECH-TEST-UNLOCK";
+
+function requireQRVerification(action) {
+ if (sessionStorage.getItem("srs_qr_verified") === "yes") {
+  action();
+  return;
+ }
+ openQRVerification(action);
+}
+
+function openQRVerification(action) {
+ clearPage();
+ pageView.append(backButton("Dashboard", showDashboard));
+ pageView.append(heading(
+  "VERIFICATION REQUIRED",
+  "Unlock Security Features",
+  "Scan the official SRS TECH testing QR or choose its image from your gallery."
+ ));
+
+ const panel = makePanel(
+  "QR Verification",
+  "Only the SRS TECH demo testing QR unlocks features in this prototype."
+ );
+ const video = document.createElement("video");
+ video.playsInline = true;
+ video.style.cssText = "width:100%;max-width:420px;border-radius:12px;display:none";
+
+ const status = document.createElement("p");
+ status.setAttribute("role", "status");
+
+ function verify(raw) {
+  if (raw === SRS_TEST_QR) {
+   sessionStorage.setItem("srs_qr_verified", "yes");
+   status.textContent = "Verification successful!";
+   if (video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+   }
+   setTimeout(action, 250);
+  } else {
+   status.textContent = "Wrong QR. Please scan the SRS TECH testing QR.";
+  }
+ }
+
+ panel.append(makeButton("Show Testing QR", showTestingQR, "btn"));
+ panel.append(makeButton("Scan Using Camera", async () => {
+  if (!("BarcodeDetector" in window)) {
+   status.textContent = "Camera QR scanning is not supported by this browser. Try updated Chrome.";
+   return;
+  }
+  let stream;
+  try {
+   const detector = new BarcodeDetector({formats:["qr_code"]});
+   stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+   video.srcObject = stream;
+   video.style.display = "block";
+   await video.play();
+   status.textContent = "Camera active. Point it at the testing QR.";
+
+   const scan = async () => {
+    if (!video.srcObject) return;
+    try {
+     const codes = await detector.detect(video);
+     if (codes.length) {
+      verify(codes[0].rawValue);
+      if (sessionStorage.getItem("srs_qr_verified") === "yes") return;
+     }
+    } catch(e) {}
+    if (video.srcObject) requestAnimationFrame(scan);
+   };
+   scan();
+  } catch(e) {
+   if (stream) stream.getTracks().forEach(t => t.stop());
+   status.textContent = "Camera unavailable. Allow camera access and use localhost or HTTPS.";
+  }
+ }, "btn primary"));
+
+ const fileLabel = document.createElement("label");
+ fileLabel.textContent = "Choose QR Image From Gallery";
+ fileLabel.style.cssText = "display:block;margin-top:18px;font-weight:600";
+
+ const file = document.createElement("input");
+ file.type = "file";
+ file.accept = "image/*";
+ file.style.cssText = "display:block;width:100%;margin-top:10px";
+
+ file.addEventListener("change", async () => {
+  const img = file.files && file.files[0];
+  if (!img) return;
+  if (!("BarcodeDetector" in window)) {
+   status.textContent = "Gallery QR reading is unsupported in this browser. Try updated Chrome.";
+   return;
+  }
+  try {
+   const detector = new BarcodeDetector({formats:["qr_code"]});
+   const bitmap = await createImageBitmap(img);
+   const codes = await detector.detect(bitmap);
+   bitmap.close();
+   if (codes.length) verify(codes[0].rawValue);
+   else status.textContent = "No QR code found in that image.";
+  } catch(e) {
+   status.textContent = "Could not read this image. Try a clear QR screenshot or photo.";
+  }
+ });
+
+ panel.append(fileLabel, file, video, status);
+ pageView.append(panel);
+}
+
+function showTestingQR() {
+ clearPage();
+ pageView.append(backButton("Back to Verification", () => openQRVerification(showDashboard)));
+ pageView.append(heading(
+  "SRS TECH TEST",
+  "Testing QR Code",
+  "Save or screenshot this QR, then choose it from your gallery on the verification screen."
+ ));
+ const panel = makePanel("Demo Testing QR", "This QR is for prototype testing only.");
+ const qrBox = document.createElement("div");
+ qrBox.id = "srsTestingQR";
+ qrBox.style.cssText = "background:#fff;padding:20px;border-radius:12px;width:max-content;max-width:100%;margin:16px auto;color:#111";
+ qrBox.textContent = SRS_TEST_QR;
+ panel.append(qrBox);
+ const note = document.createElement("p");
+ note.textContent = "Expected QR content: " + SRS_TEST_QR;
+ panel.append(note);
+ pageView.append(panel);
+
+ const script = document.createElement("script");
+ script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+ script.onload = () => {
+  const target = document.getElementById("srsTestingQR");
+  if (target && window.QRCode) {
+   target.textContent = "";
+   new QRCode(target, {text:SRS_TEST_QR, width:220, height:220});
+  }
+ };
+ script.onerror = () => {
+  const target = document.getElementById("srsTestingQR");
+  if (target) target.textContent = "QR library unavailable. Connect to the internet and reload.";
+ };
+ document.head.append(script);
+}
+
 function showDashboard(){
  clearPage();
- pageView.append(heading("YOUR SECURITY SPACE","Privacy, made simple.","Choose any feature below. Each feature opens its own page."));
+ pageView.append(heading("YOUR SECURITY SPACE","Privacy, made simple.","Choose an active service or security feature."));
+
+
  const title=document.createElement("div");title.className="section-title";
  const h=document.createElement("h3");h.textContent="All 9 Security Features";title.append(h);pageView.append(title);
  const list=document.createElement("div");list.className="tabs";
  features.forEach(f=>{
   const b=document.createElement("button");b.className="tab";
   b.innerHTML=`<span class="icon">${f.icon}</span><span class="tab-copy"><strong>${f.name}</strong><small>${f.desc}</small></span><span class="arrow">›</span>`;
-  b.addEventListener("click",()=>openFeature(f.id));list.append(b);
+  b.addEventListener("click",()=>{
+  if(sessionStorage.getItem("srs_qr_verified")!=="yes"){
+   alert("🔒 Please Scan QR First to Unlock All Features.");
+   return;
+  }
+  openFeature(f.id);
+ });list.append(b);
  });
  pageView.append(list);
+}
+function openQRService(){
+ clearPage();
+ pageView.append(backButton("Home",showDashboard));
+ pageView.append(heading("ACTIVE SERVICES","QR Code","Your account QR service. This demo displays a QR containing your account username only."));
+ const panel=makePanel("My account QR","Do not use this QR as proof of identity or authentication.");
+ const canvas=document.createElement("div");
+ canvas.style.cssText="background:white;color:#17212b;border-radius:12px;padding:20px;text-align:center;margin-top:14px";
+ const qr=document.createElement("div");
+ qr.id="accountQr";
+ qr.textContent="Preparing QR code…";
+ qr.style.cssText="overflow-wrap:anywhere;font-weight:bold";
+ canvas.append(qr);
+ panel.append(canvas);
+ const username=sessionStorage.getItem("srstech_demo_user")||"demo-user";
+ const detail=document.createElement("p");
+ detail.textContent="Account: "+username;
+ panel.append(detail);
+ const note=document.createElement("div");
+ note.className="notice";
+ note.textContent="This is a demo QR, not a secure login token. QR-based sign-in and account verification are not connected.";
+ panel.append(note);
+ pageView.append(panel);
+ const script=document.createElement("script");
+ script.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+ script.onload=()=>{
+  if(document.getElementById("accountQr") && window.QRCode){
+   document.getElementById("accountQr").textContent="";
+   new QRCode(document.getElementById("accountQr"),{text:"SRS-TECH-DEMO:"+username,width:200,height:200});
+  }
+ };
+ script.onerror=()=>{if(document.getElementById("accountQr"))document.getElementById("accountQr").textContent="QR library unavailable. Please check your internet connection.";};
+ document.head.append(script);
+}
+
+
+function openAccount(){
+ clearPage();
+ pageView.append(backButton("Dashboard",showDashboard));
+ pageView.append(heading("MY ACCOUNT","Account & Profile","View or update your demo account details."));
+
+ const username=sessionStorage.getItem("srstech_demo_user")||"";
+ let accounts=[];
+ try{accounts=JSON.parse(localStorage.getItem("srsDemoAccounts")||"[]")}catch(e){}
+ const account=accounts.find(a=>a.username.toLowerCase()===username.toLowerCase());
+
+ const panel=makePanel("My Profile","Your registered account details.");
+ if(!account){
+  const msg=document.createElement("p");
+  msg.textContent="Profile details were not found in this browser. Please sign in using the browser where you created your demo account.";
+  panel.append(msg);
+  pageView.append(panel);
+  return;
+ }
+
+ panel.append(makeRow("Full Name",account.name||"Not set","Profile"));
+ panel.append(makeRow("Username",account.username||"Not set","Account"));
+ panel.append(makeRow("Phone Number",account.phone||"Not set",account.verified?"Demo verified":"Unverified"));
+ panel.append(makeButton("Edit Profile",()=>openEditProfile(account),"btn primary"));
+ panel.append(makeButton("Scan QR Code",openAccountQR,"btn"));
+ panel.append(makeButton("Logout",()=>{
+  sessionStorage.removeItem("srstech_demo_session");
+  sessionStorage.removeItem("srs_qr_verified");
+  sessionStorage.removeItem("srstech_demo_user");
+  location.replace("index.html");
+},"btn"));
+ pageView.append(panel);
+}
+
+function openEditProfile(account){
+ clearPage();
+ pageView.append(backButton("Account",openAccount));
+ pageView.append(heading("MY ACCOUNT","Edit Profile","Update your name and phone number."));
+ const panel=makePanel("Profile details","Username changes are disabled in this demo to keep your sign-in consistent.");
+ addField(panel,"Full Name","editFullName");
+ addField(panel,"Username","editUsername");
+ addField(panel,"Phone Number","editPhone","tel");
+ document.getElementById("editFullName").value=account.name||"";
+ document.getElementById("editUsername").value=account.username||"";
+ document.getElementById("editUsername").readOnly=true;
+ document.getElementById("editPhone").value=account.phone||"";
+ document.getElementById("editPhone").maxLength=10;
+ document.getElementById("editPhone").inputMode="numeric";
+ const status=document.createElement("p");
+ panel.append(makeButton("Save Profile",()=>{
+  const name=document.getElementById("editFullName").value.trim();
+  const phone=document.getElementById("editPhone").value.trim();
+  if(!name){status.textContent="Please enter your full name.";return}
+  if(!/^[0-9]{10}$/.test(phone)){status.textContent="Enter a valid 10-digit phone number.";return}
+  let all=[];
+  try{all=JSON.parse(localStorage.getItem("srsDemoAccounts")||"[]")}catch(e){}
+  if(all.some(a=>a.phone===phone&&a.username.toLowerCase()!==account.username.toLowerCase())){
+   status.textContent="This phone number is already used by another demo account.";return
+  }
+  const i=all.findIndex(a=>a.username.toLowerCase()===account.username.toLowerCase());
+  if(i<0){status.textContent="Account not found in this browser.";return}
+  all[i].name=name;
+  all[i].phone=phone;
+  try{
+   localStorage.setItem("srsDemoAccounts",JSON.stringify(all));
+   status.textContent="Profile updated successfully.";
+   setTimeout(openAccount,500);
+  }catch(e){status.textContent="Could not save the profile."}
+ },"btn primary"));
+ panel.append(status);
+ pageView.append(panel);
+}
+
+async function openAccountQR(){
+ clearPage();
+ pageView.append(backButton("Account",openAccount));
+ pageView.append(heading("ACTIVE SERVICES","Scan QR Code","Scan the SRS TECH demo QR using your camera or an image."));
+ const panel=makePanel("QR Scanner","Scan a recognized SRS TECH demo QR to unlock the dashboard features.");
+ const video=document.createElement("video");
+ video.playsInline=true;
+ video.style.cssText="width:100%;max-width:420px;border-radius:12px;display:none";
+ const status=document.createElement("p");
+ const stopCamera=()=>{
+  if(video.srcObject){
+   video.srcObject.getTracks().forEach(t=>t.stop());
+   video.srcObject=null;
+  }
+  video.style.display="none";
+ };
+ const verify=raw=>{
+  const value=String(raw||"").trim();
+  const username=sessionStorage.getItem("srstech_demo_user")||"";
+  const validTestQR=value==="SRS-TECH-TEST-UNLOCK";
+  const validAccountQR=!!username && value==="SRS-TECH-DEMO:"+username;
+  if(!validTestQR && !validAccountQR){
+   status.textContent="QR not recognized. Please scan the SRS TECH demo QR.";
+   return false;
+  }
+  stopCamera();
+  sessionStorage.setItem("srs_qr_verified","yes");
+  status.textContent="✅ Permission Granted! All 9 SRS TECH features are now unlocked.";
+  const done=makeButton("Open Dashboard",showDashboard,"btn primary");
+  panel.append(done);
+  return true;
+ };
+ const scanCamera=makeButton("Start Camera Scan",async()=>{
+  if(!("BarcodeDetector" in window)){
+   status.textContent="QR scanning is not supported by this browser. Try an updated Chrome browser.";
+   return;
+  }
+  if(!navigator.mediaDevices?.getUserMedia){
+   status.textContent="Camera access requires HTTPS or localhost.";
+   return;
+  }
+  let stream;
+  try{
+   const detector=new BarcodeDetector({formats:["qr_code"]});
+   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+   video.srcObject=stream;
+   video.style.display="block";
+   await video.play();
+   status.textContent="Camera active. Point it at the SRS TECH demo QR.";
+   const scan=async()=>{
+    if(!video.srcObject)return;
+    try{
+     const codes=await detector.detect(video);
+     if(codes.length && verify(codes[0].rawValue))return;
+    }catch(e){}
+    if(video.srcObject)requestAnimationFrame(scan);
+   };
+   scan();
+  }catch(e){
+   if(stream)stream.getTracks().forEach(t=>t.stop());
+   status.textContent="Camera unavailable. Allow camera permission and use HTTPS.";
+  }
+ },"btn primary");
+ const galleryLabel=document.createElement("label");
+ galleryLabel.className="btn";
+ galleryLabel.style.display="inline-block";
+ galleryLabel.style.marginTop="10px";
+ galleryLabel.textContent="Choose QR Image From Gallery";
+ const file=document.createElement("input");
+ file.type="file";
+ file.accept="image/*";
+ file.style.display="block";
+ file.style.marginTop="8px";
+ file.addEventListener("change",async()=>{
+  const imageFile=file.files&&file.files[0];
+  if(!imageFile)return;
+  if(!("BarcodeDetector" in window)){
+   status.textContent="Image QR scanning is not supported by this browser. Try an updated Chrome browser.";
+   return;
+  }
+  try{
+   const detector=new BarcodeDetector({formats:["qr_code"]});
+   const bitmap=await createImageBitmap(imageFile);
+   const codes=await detector.detect(bitmap);
+   bitmap.close();
+   if(!codes.length){
+    status.textContent="No QR code found in this image. Please select another image.";
+    return;
+   }
+   verify(codes[0].rawValue);
+  }catch(e){
+   status.textContent="Could not read this image. Please try a clear QR image.";
+  }
+ });
+ galleryLabel.append(file);
+ panel.append(scanCamera,video,galleryLabel,status);
+ pageView.append(panel);
 }
 function makePanel(title,description){
  const panel=document.createElement("section");panel.className="content";
@@ -224,11 +597,11 @@ function openAPK(){
  const panel=makePanel("Project details","This prototype does not compile or sign APK files.");
  const field=document.createElement("div");field.className="field";
  const label=document.createElement("label");label.textContent="Android app name";
- const input=document.createElement("input");input.id="apkName";input.value="SRS TECH Security";input.maxLength=60;
+ const input=document.createElement("input");input.id="apkName";input.value="SurakshaX";input.maxLength=60;
  field.append(label,input);panel.append(field);
  const result=document.createElement("pre");result.style.whiteSpace="pre-wrap";result.style.color="var(--muted)";
  panel.append(makeButton("Generate project specification",()=>{
-  const name=document.getElementById("apkName").value.trim()||"SRS TECH Security";
+  const name=document.getElementById("apkName").value.trim()||"SurakshaX";
   result.textContent="Project: "+name+"\nPlatform: Android\nNext step: create a native Android Studio project.\nRequired: Android manifest, permission handling, UI, testing and APK build/signing.";
  }));
  panel.append(result);pageView.append(panel);
@@ -279,7 +652,7 @@ function openShutdown(){
   const screen=document.createElement("div");screen.style.cssText="position:fixed;inset:0;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;text-align:center";
   const h=document.createElement("h2");h.textContent="Screen off simulation";
   const p=document.createElement("p");p.textContent="This is only a website demo, not a real shutdown.";
-  const b=makeButton("Return to SRS TECH",showDashboard);screen.append(h,p,b);document.body.append(screen);
+  const b=makeButton("Return to SurakshaX",showDashboard);screen.append(h,p,b);document.body.append(screen);
   b.addEventListener("click",()=>screen.remove(),{once:true});
  }));
  const note=document.createElement("div");note.className="notice";note.textContent="Triple power-button activation and real system-screen behavior depend on Android version, device manufacturer, and permitted system APIs.";panel.append(note);pageView.append(panel);

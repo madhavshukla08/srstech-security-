@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SRS TECH — Developer Login</title>
+<title>SurakshaX — Account Access</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:grid;place-items:center;background:#07111f;color:#f4f7ff;font-family:Arial,sans-serif;padding:20px}
 .card{width:min(100%,430px);padding:28px;background:#122238;border:1px solid #30445f;border-radius:20px;box-shadow:0 20px 60px #0005}
-h1,h2{margin-top:0}
 p{color:#bdcadd;line-height:1.5}
 label{display:block;margin:15px 0 7px}
 input{width:100%;padding:13px;border-radius:9px;border:1px solid #405674;background:#091525;color:white}
@@ -16,111 +15,136 @@ button{width:100%;padding:13px;margin-top:16px;border:0;border-radius:9px;backgr
 .link{display:block;text-align:center;margin-top:18px;color:#80c5ff;cursor:pointer;text-decoration:underline}
 .hidden{display:none!important}
 #msg{overflow-wrap:anywhere;color:#ffd0a8}
-.qr{display:block;width:min(100%,260px);margin:18px auto;background:white;padding:10px;border-radius:12px}
 .note{font-size:12px;color:#9db0c8}
-video{width:100%;margin-top:14px;border-radius:10px}
 </style>
 </head>
 <body>
 <main class="card">
-
 <section id="login">
-<h1>🛡️ SRS TECH</h1>
-<p>Developer Access — sign in to open your dashboard.</p>
-<form id="form">
-<label for="user">Username</label>
-<input id="user" autocomplete="username" required>
-<label for="pass">Password</label>
-<input id="pass" type="password" autocomplete="current-password" required>
+<h1>🛡️ SurakshaX</h1>
+<p>Sign in to access your security dashboard.</p>
+<form id="loginForm">
+<label for="loginUser">Username</label>
+<input id="loginUser" autocomplete="username" required>
+<label for="loginPass">Password</label>
+<input id="loginPass" type="password" autocomplete="current-password" required>
 <button type="submit">Login</button>
 </form>
-<a class="link" href="#register" id="create">Create an account</a>
-<p class="note">Temporary local demo. Not production authentication.</p>
+<a class="link" href="#" id="showRegister">Create an account</a>
+<p class="note">Demo version. Accounts are stored only in this browser.</p>
 </section>
 
 <section id="register" class="hidden">
-<h2>📝 Create an account</h2>
-<p>Scan a QR code using your device camera.</p>
-<button type="button" id="scan">Scan QR using this device</button>
-<video id="video" class="hidden" playsinline></video>
-<p id="msg" role="status"></p>
-<a class="link" href="#" id="back">← Back to Login</a>
-<p class="note">Point your camera at a QR code. Only trusted QR links should be opened.</p>
+<h2>📝 Create Account</h2>
+<form id="registerForm">
+<label for="fullName">Full Name</label>
+<input id="fullName" autocomplete="name" required maxlength="80">
+<label for="newUsername">Username</label>
+<input id="newUsername" autocomplete="username" required minlength="3" maxlength="30">
+<label for="phone">Phone Number</label>
+<input id="phone" type="tel" autocomplete="tel" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" required>
+<label for="newPassword">Password</label>
+<input id="newPassword" type="password" autocomplete="new-password" minlength="8" required>
+<button type="submit">Continue to OTP</button>
+</form>
+<a class="link" href="#" id="backLogin">← Back to Login</a>
 </section>
 
+<section id="otpPage" class="hidden">
+<h2>📱 Verify Phone</h2>
+<p id="otpInfo">Enter the demo OTP to continue.</p>
+<form id="otpForm">
+<label for="otp">OTP</label>
+<input id="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+<button type="submit">Verify & Create Account</button>
+</form>
+<p class="note">Demo only: no SMS is sent. The test OTP is displayed on this page.</p>
+<p id="msg" role="status"></p>
+<a class="link" href="#" id="cancelOtp">Cancel</a>
+</section>
 </main>
+
 <script>
-const login=document.getElementById('login');
-const reg=document.getElementById('register');
-const msg=document.getElementById('msg');
-const video=document.getElementById('video');
-let stream=null,active=false;
-
-document.getElementById('create').addEventListener('click',e=>{
- e.preventDefault();
- login.classList.add('hidden');
- reg.classList.remove('hidden');
- msg.textContent='';
-});
-
-function stopCamera(){
- active=false;
- if(stream)stream.getTracks().forEach(t=>t.stop());
- stream=null;
- video.srcObject=null;
- video.classList.add('hidden');
+const $=id=>document.getElementById(id);
+const login=$('login'),register=$('register'),otpPage=$('otpPage');
+let pendingAccount=null;
+function show(section){
+ [login,register,otpPage].forEach(s=>s.classList.add('hidden'));
+ section.classList.remove('hidden');
+ $('msg').textContent='';
 }
+function getAccounts(){
+ try{return JSON.parse(localStorage.getItem('srsDemoAccounts')||'[]')}catch(e){return []}
+}
+function saveAccounts(accounts){
+ localStorage.setItem('srsDemoAccounts',JSON.stringify(accounts));
+}
+$('showRegister').onclick=e=>{e.preventDefault();show(register)};
+$('backLogin').onclick=e=>{e.preventDefault();show(login)};
+$('cancelOtp').onclick=e=>{e.preventDefault();pendingAccount=null;show(login)};
 
-document.getElementById('back').addEventListener('click',e=>{
+$('registerForm').addEventListener('submit',e=>{
  e.preventDefault();
- stopCamera();
- reg.classList.add('hidden');
- login.classList.remove('hidden');
+ const account={
+  name:$('fullName').value.trim(),
+  username:$('newUsername').value.trim(),
+  phone:$('phone').value.trim(),
+  password:$('newPassword').value
+ };
+ if(!/^[0-9]{10}$/.test(account.phone)){
+  alert('Enter a valid 10-digit phone number.');return;
+ }
+ const accounts=getAccounts();
+ if(accounts.some(a=>a.username.toLowerCase()===account.username.toLowerCase())){
+  alert('Username already exists. Choose another username.');return;
+ }
+ if(accounts.some(a=>a.phone===account.phone)){
+  alert('This phone number already has a demo account.');return;
+ }
+ pendingAccount=account;
+ $('otpInfo').textContent='Demo OTP: 123456. Phone: '+account.phone;
+ $('otp').value='';
+ show(otpPage);
 });
 
-document.getElementById('scan').addEventListener('click',async()=>{
- if(!('BarcodeDetector' in window)){
-  msg.textContent='Camera QR scanning is not supported in this browser. Scan the displayed QR with another phone.';
-  return;
+$('otpForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ if(!pendingAccount)return;
+ if($('otp').value!=='123456'){
+  $('msg').textContent='Incorrect OTP. For this demo, use 123456.';return;
  }
  try{
-  const detector=new BarcodeDetector({formats:['qr_code']});
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-  video.srcObject=stream;
-  video.classList.remove('hidden');
-  await video.play();
-  active=true;
-  async function tick(){
-   if(!active)return;
-   try{
-    const codes=await detector.detect(video);
-    if(codes.length){
-     const u=new URL(codes[0].rawValue,location.href);
-     if(['http:','https:'].includes(u.protocol)){
-      stopCamera();
-      location.href=u.href;
-      return;
-     }
-    }
-   }catch(e){}
-   if(active)setTimeout(tick,250);
+  const accounts=getAccounts();
+  if(accounts.some(a=>a.username.toLowerCase()===pendingAccount.username.toLowerCase())){
+   $('msg').textContent='Username already exists. Please register again.';
+   pendingAccount=null;return;
   }
-  tick();
- }catch(e){
-  msg.textContent='Camera unavailable. Allow camera permission or scan the QR with your phone camera.';
+  accounts.push({...pendingAccount,verified:true});
+  saveAccounts(accounts);
+  const username=pendingAccount.username;
+  pendingAccount=null;
+  sessionStorage.setItem('srstech_demo_session','active');
+  sessionStorage.setItem('srstech_demo_user',username);
+  location.href='app.html';
+ }catch(err){
+  $('msg').textContent='Could not save account in this browser.';
  }
 });
 
-document.getElementById('form').addEventListener('submit',e=>{
+$('loginForm').addEventListener('submit',e=>{
  e.preventDefault();
- const u=document.getElementById('user').value.trim();
- const p=document.getElementById('pass').value;
- if(u==='srstech'&&p==='SrsTech@2026'){
-  sessionStorage.setItem('srstech_demo_session','active');
-  location.href='app.html';
- }else{
-  alert('Incorrect temporary demo credentials.');
+ const username=$('loginUser').value.trim();
+ const password=$('loginPass').value;
+ const account=getAccounts().find(a=>
+  a.username.toLowerCase()===username.toLowerCase()&&a.password===password&&a.verified
+ );
+ if(!account){
+  alert('Account not found or password incorrect. Create an account first.');
+  return;
  }
+ sessionStorage.setItem('srstech_demo_session','active');
+ sessionStorage.setItem('srstech_demo_user',account.username);
+ location.href='app.html';
 });
 </script>
 </body>
