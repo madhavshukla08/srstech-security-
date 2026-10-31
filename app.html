@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101923">
-<title>SurakshaX</title>
+<title>SurakshaProX</title>
 <style>
 :root {
  --bg:#101923;--panel:#182431;--panel2:#223343;
@@ -68,7 +68,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 0}
 <body>
 <div class="app">
 <header>
- <div class="brand"><div class="logo">S</div><div><h1>SurakshaX</h1><p>Privacy and device protection</p></div></div>
+ <div class="brand"><div class="logo">S</div><div><h1>SurakshaProX</h1><p>Privacy and device protection</p></div></div>
  <button class="account" id="accountMenuBtn" type="button" aria-label="Open account"><div class="avatar">U</div><div style="text-align:left"><strong id="accountName">My Account</strong><small>Account & Profile</small></div><span>⌄</span></button>
 </header>
 
@@ -88,7 +88,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 0}
 
 <main id="pageView" aria-live="polite"></main>
 <div class="notice">Security prototype: features requiring Android device access or online services are clearly marked. This website alone cannot enforce device permissions, detect lock-screen failures, or remove content from the internet.</div>
-<footer>SurakshaX · Privacy first, always.</footer>
+<footer>SurakshaProX · Privacy first, always.</footer>
 </div>
 
 <script>
@@ -597,11 +597,11 @@ function openAPK(){
  const panel=makePanel("Project details","This prototype does not compile or sign APK files.");
  const field=document.createElement("div");field.className="field";
  const label=document.createElement("label");label.textContent="Android app name";
- const input=document.createElement("input");input.id="apkName";input.value="SurakshaX";input.maxLength=60;
+ const input=document.createElement("input");input.id="apkName";input.value="SurakshaProX";input.maxLength=60;
  field.append(label,input);panel.append(field);
  const result=document.createElement("pre");result.style.whiteSpace="pre-wrap";result.style.color="var(--muted)";
  panel.append(makeButton("Generate project specification",()=>{
-  const name=document.getElementById("apkName").value.trim()||"SurakshaX";
+  const name=document.getElementById("apkName").value.trim()||"SurakshaProX";
   result.textContent="Project: "+name+"\nPlatform: Android\nNext step: create a native Android Studio project.\nRequired: Android manifest, permission handling, UI, testing and APK build/signing.";
  }));
  panel.append(result);pageView.append(panel);
@@ -652,7 +652,7 @@ function openShutdown(){
   const screen=document.createElement("div");screen.style.cssText="position:fixed;inset:0;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;text-align:center";
   const h=document.createElement("h2");h.textContent="Screen off simulation";
   const p=document.createElement("p");p.textContent="This is only a website demo, not a real shutdown.";
-  const b=makeButton("Return to SurakshaX",showDashboard);screen.append(h,p,b);document.body.append(screen);
+  const b=makeButton("Return to SurakshaProX",showDashboard);screen.append(h,p,b);document.body.append(screen);
   b.addEventListener("click",()=>screen.remove(),{once:true});
  }));
  const note=document.createElement("div");note.className="notice";note.textContent="Triple power-button activation and real system-screen behavior depend on Android version, device manufacturer, and permitted system APIs.";panel.append(note);pageView.append(panel);
