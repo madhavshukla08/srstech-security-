@@ -40,77 +40,6 @@ footer{text-align:center;padding:24px;color:#94a3b8}
   <p>Admin Panel · Security Management Center</p><button id="logoutBtn" type="button" hidden>Sign Out</button>
 </header>
 
-
-<section id="loginPanel" aria-labelledby="loginHeading">
-  <h2 id="loginHeading">🔐 Admin Login</h2>
-  <p class="muted">Sign in with an authorized SurakshaProX admin account.</p>
-  <form id="loginForm">
-    <label for="adminEmail">Admin Login ID</label>
-    <input id="adminEmail" type="text" autocomplete="username"
-           required maxlength="254" placeholder="Enter Login ID">
-    <label for="adminPassword">Password</label>
-    <input id="adminPassword" type="password" autocomplete="current-password"
-           required placeholder="Enter password">
-    <button id="loginBtn" type="submit">Sign In</button>
-  </form>
-  <button id="showSignupBtn" type="button" class="secondary" style="margin-top:10px">Create Account</button>
-  <form id="signupForm" hidden style="margin-top:18px">
-    <h3>Create Admin Account</h3>
-    <label for="signupEmail">Email</label>
-    <input id="signupEmail" type="email" autocomplete="email" required placeholder="Enter your email">
-    <label for="signupPassword">Password</label>
-    <input id="signupPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters">
-    <button id="signupBtn" type="submit">Create Account</button>
-    <button id="showLoginBtn" type="button" class="secondary">Back to Login</button>
-  </form>
-  <p id="authStatus" role="status">Please sign in to continue.</p>
-</section>
-
-<main class="container" id="adminApp" hidden>
-  <h2>Dashboard</h2>
-
-  <div class="grid">
-    <section class="card">
-      <h2>📊 Total QR Codes</h2>
-      <div class="stat" id="totalQR">0</div>
-      <small>Shared Supabase records</small>
-    </section>
-    <section class="card">
-      <h2>🟢 Active QR Codes</h2>
-      <div class="stat" id="activeQR">0</div>
-      <small>Active cloud records</small>
-    </section>
-    <section class="card">
-      <h2>🔐 System Status</h2>
-      <div class="stat" style="font-size:22px">PROTOTYPE</div>
-      <small>Admin access verified after login</small>
-    </section>
-  </div>
-
-  <section class="card">
-    <h2>🆔 Unique QR Code Generator</h2>
-    <label for="qrName">Full Name</label>
-    <input id="qrName" maxlength="100" placeholder="Enter user's full name">
-    <label for="qrPhone">Mobile Number</label>
-    <input id="qrPhone" type="tel" maxlength="15" placeholder="Enter mobile number">
-    <label for="qrPurpose">QR Purpose</label>
-    <input id="qrPurpose" maxlength="100" placeholder="e.g. Device Registration">
-    <button id="generateBtn" onclick="generateQR()">Generate Unique QR</button>
-    <div id="qrResult"></div>
-    <button id="downloadBtn" hidden onclick="downloadQR()">⬇ Download QR PNG</button>
-    <p class="muted">QR records are stored in the shared Supabase database.</p>
-    <p id="generatorStatus" role="status"></p>
-  </section>
-
-  <section class="card">
-    <h2>📷 QR Code Scanner</h2>
-    <p class="muted">Allow camera permission when prompted. Camera scanning requires localhost or HTTPS.</p>
-    <button id="startBtn" onclick="startScanner()">Start Scanner</button>
-    <button onclick="stopScanner()">Stop Scanner</button>
-    <div id="reader"></div>
-    <p id="scanResult" role="status">Scanner is stopped.</p>
-  </section>
-
   <section class="card">
     <h2>📋 QR Management</h2>
     <div class="table-wrap">
@@ -125,7 +54,7 @@ footer{text-align:center;padding:24px;color:#94a3b8}
   <p class="notice">Admin access is checked against the server-side admin membership table. Database access is also restricted by Supabase Row Level Security.</p>
 </main>
 
-<footer>SurakshaProX Admin Panel · Initial Prototype</footer>
+<footer>SurakshaProX Admin Panel</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
