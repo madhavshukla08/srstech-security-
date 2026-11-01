@@ -21,7 +21,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 input{width:100%;padding:12px;background:#0b1120;color:white;border:1px solid #334155;border-radius:8px;margin:10px 0 15px}
 #qrResult{margin:20px 0;text-align:center;overflow-wrap:anywhere}
 #qrResult canvas,#qrResult img{background:white;padding:10px;max-width:100%;height:auto}
-#reader{width:100%;max-width:450px;overflow:hidden;margin-top:15px}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
 th,td{text-align:left;padding:10px;border-bottom:1px solid #334155;overflow-wrap:anywhere}
@@ -40,6 +39,68 @@ footer{text-align:center;padding:24px;color:#94a3b8}
   <p>Admin Panel · Security Management Center</p><button id="logoutBtn" type="button" hidden>Sign Out</button>
 </header>
 
+
+<section id="loginPanel" aria-labelledby="loginHeading">
+  <h2 id="loginHeading">🔐 Admin Login</h2>
+  <p class="muted">Sign in with an authorized SurakshaProX admin account.</p>
+  <form id="loginForm">
+    <label for="adminEmail">Admin Login ID</label>
+    <input id="adminEmail" type="text" autocomplete="username"
+           required maxlength="254" placeholder="Enter Login ID">
+    <label for="adminPassword">Password</label>
+    <input id="adminPassword" type="password" autocomplete="current-password"
+           required placeholder="Enter password">
+    <button id="loginBtn" type="submit">Sign In</button>
+  </form>
+  <button id="showSignupBtn" type="button" class="secondary" style="margin-top:10px">Create Account</button>
+  <form id="signupForm" hidden style="margin-top:18px">
+    <h3>Create Admin Account</h3>
+    <label for="signupEmail">Email</label>
+    <input id="signupEmail" type="email" autocomplete="email" required placeholder="Enter your email">
+    <label for="signupPassword">Password</label>
+    <input id="signupPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters">
+    <button id="signupBtn" type="submit">Create Account</button>
+    <button id="showLoginBtn" type="button" class="secondary">Back to Login</button>
+  </form>
+  <p id="authStatus" role="status">Please sign in to continue.</p>
+</section>
+
+<main class="container" id="adminApp" hidden>
+  <h2>Dashboard</h2>
+
+  <div class="grid">
+    <section class="card">
+      <h2>📊 Total QR Codes</h2>
+      <div class="stat" id="totalQR">0</div>
+      <small>Shared Supabase records</small>
+    </section>
+    <section class="card">
+      <h2>🟢 Active QR Codes</h2>
+      <div class="stat" id="activeQR">0</div>
+      <small>Active cloud records</small>
+    </section>
+    <section class="card">
+      <h2>🔐 System Status</h2>
+      <div class="stat" style="font-size:22px">ACTIVE</div>
+      <small>Admin access verified after login</small>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>🆔 Unique QR Code Generator</h2>
+    <label for="qrName">Full Name</label>
+    <input id="qrName" maxlength="100" placeholder="Enter user's full name">
+    <label for="qrPhone">Mobile Number</label>
+    <input id="qrPhone" type="tel" maxlength="15" placeholder="Enter mobile number">
+    <label for="qrPurpose">QR Purpose</label>
+    <input id="qrPurpose" maxlength="100" placeholder="e.g. Device Registration">
+    <button id="generateBtn" onclick="generateQR()">Generate Unique QR</button>
+    <div id="qrResult"></div>
+    <button id="downloadBtn" hidden onclick="downloadQR()">⬇ Download QR PNG</button>
+    <p class="muted">QR records are stored in the shared Supabase database.</p>
+    <p id="generatorStatus" role="status"></p>
+  </section>
+
   <section class="card">
     <h2>📋 QR Management</h2>
     <div class="table-wrap">
@@ -54,10 +115,9 @@ footer{text-align:center;padding:24px;color:#94a3b8}
   <p class="notice">Admin access is checked against the server-side admin membership table. Database access is also restricted by Supabase Row Level Security.</p>
 </main>
 
-<footer>SurakshaProX Admin Panel</footer>
+<footer>SurakshaProX Admin Panel · Admin Console</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 
@@ -69,9 +129,6 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let records = [];
 let currentQRId = null;
-let scanner = null;
-let scannerRunning = false;
-let lastScan = "";
 let signedInUserId = null;
 let authBusy = false;
 
@@ -282,86 +339,7 @@ function downloadQR() {
   link.click();
 }
 
-async function startScanner() {
-  if (!signedInUserId) {
-    $("scanResult").textContent = "Please sign in first.";
-    return;
-  }
-  if (scannerRunning) return;
-  if (!window.Html5Qrcode) {
-    $("scanResult").textContent = "Scanner library failed to load. Check your internet connection.";
-    return;
-  }
-
-  try {
-    scanner = new Html5Qrcode("reader");
-    await scanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 220, height: 220 } },
-      async decodedText => {
-        if (decodedText === lastScan) return;
-        lastScan = decodedText;
-
-        let parsed;
-        try {
-          parsed = JSON.parse(decodedText);
-        } catch (_) {
-          $("scanResult").textContent = "QR scanned, but it is not a valid SurakshaProX QR.";
-          return;
-        }
-
-        if (!parsed || parsed.app !== "SurakshaProX" || !parsed.id) {
-          $("scanResult").textContent = "This QR does not belong to SurakshaProX.";
-          return;
-        }
-
-        const record = records.find(r => r.id === parsed.id);
-        if (!record) {
-          $("scanResult").textContent = "QR ID not found in the shared database.";
-          return;
-        }
-        if (record.status !== "Active") {
-          $("scanResult").textContent = "This QR is DISABLED.";
-          return;
-        }
-
-        const previous = record.qrScanned;
-        record.qrScanned = true;
-        renderRecords();
-        if (await saveRecords()) {
-          $("scanResult").textContent = "Valid active QR scanned for " + record.name + ".";
-        } else {
-          record.qrScanned = previous;
-          renderRecords();
-          $("scanResult").textContent = "Scan found, but its status could not be saved to the cloud.";
-        }
-      },
-      () => {}
-    );
-    scannerRunning = true;
-    $("scanResult").textContent = "Scanner is running.";
-  } catch (error) {
-    scanner = null;
-    scannerRunning = false;
-    $("scanResult").textContent = "Could not start camera. Allow camera access and use HTTPS or localhost.";
-  }
-}
-
-async function stopScanner() {
-  if (scanner && scannerRunning) {
-    try {
-      await scanner.stop();
-      await scanner.clear();
-    } catch (_) {}
-  }
-  scanner = null;
-  scannerRunning = false;
-  lastScan = "";
-  $("scanResult").textContent = "Scanner is stopped.";
-}
-
 async function signOutAndHide(message = "You have been signed out.") {
-  await stopScanner();
   signedInUserId = null;
   records = [];
   currentQRId = null;
